@@ -65,6 +65,10 @@ public class MemoryStruct<T> {
         }
     }
 
+    private String readNullTerminatedString(MemorySegment segment) {
+        return segment.reinterpret(this.maxStringLength).getString(0);
+    }
+
     public Object getField(String fieldName) {
         VarHandle vh = this.structLayout.varHandle(PathElement.groupElement(fieldName));
         Object value = vh.get(this.segment, 0);
@@ -74,11 +78,7 @@ public class MemoryStruct<T> {
         return vh.get(this.segment, 0);
     }
 
-    public String readNullTerminatedString(MemorySegment segment) {
-        return segment.reinterpret(this.maxStringLength).getString(0);
-    }
-
-    public T convertBackToEntity(){
+    public T convertBackToEntity() {
         try {
             T newObj = this.clazz.getDeclaredConstructor().newInstance();
             for (Field field : this.clazz.getDeclaredFields()) {
