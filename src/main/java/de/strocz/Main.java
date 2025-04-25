@@ -2,8 +2,7 @@ package de.strocz;
 
 import java.lang.foreign.Arena;
 
-//TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
-// click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
+
 public class Main {
     public static void main(String[] args) throws IllegalArgumentException, IllegalAccessException {
         Customer customer = new Customer("John Doe", "a@b.de", "Main Street 1", "1234567890", 30);
