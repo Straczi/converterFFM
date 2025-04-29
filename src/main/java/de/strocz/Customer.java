@@ -1,18 +1,22 @@
 package de.strocz;
 
+import java.util.List;
+
 public class Customer {
     private String name;
     private String email;
     private String address;
-    private String phoneNumber;
+    private List<String> orders;
     private int age;
+    private String phoneNumber;
 
-    public Customer(String name, String email, String address, String phoneNumber, int age) {
+    public Customer(String name, String email, String address, String phoneNumber, int age, List<String> orders) {
         this.name = name;
         this.email = email;
         this.address = address;
         this.phoneNumber = phoneNumber;
         this.age = age;
+        this.orders = orders;
     }
     public Customer() {
     }
@@ -47,6 +51,12 @@ public class Customer {
     public void setAge(int age) {
         this.age = age;
     }
-
+    
+    public List<String> getOrders() {
+        return orders;
+    }
+    public void setOrders(List<String> orders) {
+        this.orders = orders;
+    }
     
 }
