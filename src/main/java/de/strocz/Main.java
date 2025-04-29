@@ -13,7 +13,7 @@ public class Main {
         //example point
         Point point = new Point(10, 20);
 
-        try(Arena arena = Arena.ofAuto()) {
+        try(Arena arena = Arena.ofConfined()) {
             MemoryStruct<Customer> memoryConvert = new MemoryStruct<>(arena, customer);
 
             System.out.println("Name: " + memoryConvert.getFieldValue("name"));

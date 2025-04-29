@@ -123,7 +123,7 @@ public class MemoryStruct<T> {
                 MemorySegment ms = arena.allocateFrom((String) currentElement);
                 vh.set(segment, 8l ,offset, ms);
             } else {
-                vh.set(segment, 8l, offset, currentElement); 
+                vh.set(segment, 8l, offset, currentElement);  //TODO: get this to work with other types besides String!
             }
             offset++;
             currentElement = it.hasNext() ? it.next() : null;
@@ -157,7 +157,7 @@ public class MemoryStruct<T> {
         long size = value.reinterpret(8l).get(ValueLayout.JAVA_LONG, 0);
         List<String> list = new LinkedList<>();
         for (int i = 0; i < size; i++) {
-            MemorySegment ms = value.reinterpret(8l+ 8*size).get(ValueLayout.ADDRESS, 8l * (i + 1));
+            MemorySegment ms = value.reinterpret(8l+ 8*size).get(ValueLayout.ADDRESS, 8l * (i + 1)); //TODO: get this to work with other types besides String!
             String s = readNullTerminatedString(ms);
             list.add(s);
         }
