@@ -9,16 +9,24 @@ public class Customer {
     private List<String> orders;
     private int age;
     private String phoneNumber;
+    private List<Float> numbers;
 
-    public Customer(String name, String email, String address, String phoneNumber, int age, List<String> orders) {
+    public Customer(String name, String email, String address, String phoneNumber, int age, List<String> orders, List<Float> numbers) {
         this.name = name;
         this.email = email;
         this.address = address;
         this.phoneNumber = phoneNumber;
         this.age = age;
         this.orders = orders;
+        this.numbers = numbers;
     }
     public Customer() {
+    }
+    public List<Float> getNumbers() {
+        return numbers;
+    }
+    public void setNumbers(List<Float> numbers) {
+        this.numbers = numbers;
     }
     
     public String getName() {

@@ -8,7 +8,7 @@ public class Main {
     public static void main(String[] args) throws IllegalArgumentException, IllegalAccessException, NoSuchFieldException {
 
         //example customer
-        Customer customer = new Customer("John Doe", "a@b.de", "Main Street 1", "1234567890", 30, List.of("a", "b", "c", "d"));
+        Customer customer = new Customer("John Doe", "a@b.de", "Main Street 1", "1234567890", 30, List.of("aaksjdlaksjdlkajsdlkajsl", "b", "calhsdlkjahsdkj", "huh?"), List.of(42.0f, 6.9f, 2.1f, 3.14f));
         
         //example point
         Point point = new Point(10, 20);
@@ -21,7 +21,8 @@ public class Main {
             System.out.println("Address: " + memoryConvert.getFieldValue("address"));
             System.out.println("Phone: " + memoryConvert.getFieldValue("phoneNumber"));
             System.out.println("Age: " + memoryConvert.getFieldValue("age")); 
-
+            System.out.println("orders: " + memoryConvert.getFieldValue("orders"));
+            System.out.println("numbers: " + memoryConvert.getFieldValue("numbers"));  
             
             Customer backToCustomer = memoryConvert.convertBackToEntity();
 
@@ -31,6 +32,7 @@ public class Main {
             System.out.println("Phone: " + backToCustomer.getPhoneNumber());
             System.out.println("Age: " + backToCustomer.getAge());
             System.out.println("Orders: " + backToCustomer.getOrders());
+            System.out.println("Numbers: " + backToCustomer.getNumbers());
             
             
             //Point

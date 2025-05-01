@@ -13,8 +13,6 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 public class MemoryStruct<T> {
     private StructLayout structLayout;
@@ -43,7 +41,7 @@ public class MemoryStruct<T> {
             field.setAccessible(true);
             ValueLayout valueLayout = getValueLayoutForClass(field.getType(), field.getName());
             memoryLayouts.add(valueLayout);
-            if(valueLayout.byteAlignment() < STRUCT_LAYOUT_BYTE_SIZE){
+            if (valueLayout.byteAlignment() < STRUCT_LAYOUT_BYTE_SIZE) {
                 memoryLayouts.add(MemoryLayout.paddingLayout(8 - valueLayout.byteAlignment()));
             }
         }
@@ -57,17 +55,44 @@ public class MemoryStruct<T> {
         }
         // other viable cases
         ValueLayout valueLayout;
-        switch (attributeClass.getName()) { //TODO: this may have to be rewritten to also accept java.lang.Integer (and so on)
-            case "int" -> valueLayout = ValueLayout.JAVA_INT.withName(name);
-            case "java.lang.String" -> valueLayout = ValueLayout.ADDRESS.withName(name);
-            case "double" -> valueLayout = ValueLayout.JAVA_DOUBLE.withName(name);
-            case "long" -> valueLayout = ValueLayout.JAVA_LONG.withName(name);
-            case "float" -> valueLayout = ValueLayout.JAVA_FLOAT.withName(name);
-            case "char" -> valueLayout = ValueLayout.JAVA_CHAR.withName(name);
-            case "byte" -> valueLayout = ValueLayout.JAVA_BYTE.withName(name);
-            case "short" -> valueLayout = ValueLayout.JAVA_SHORT.withName(name);
-            case "boolean" -> valueLayout = ValueLayout.JAVA_BOOLEAN.withName(name);
-            default -> throw new IllegalArgumentException("Unsupported field type: " + attributeClass);
+        switch (attributeClass.getName()) {
+            case "java.lang.Integer":
+            case "int":
+                valueLayout = ValueLayout.JAVA_INT.withName(name);
+                break;
+            case "java.lang.String":
+                valueLayout = ValueLayout.ADDRESS.withName(name);
+                break;
+            case "java.lang.Double":
+            case "double":
+                valueLayout = ValueLayout.JAVA_DOUBLE.withName(name);
+                break;
+            case "java.lang.Long":
+            case "long":
+                valueLayout = ValueLayout.JAVA_LONG.withName(name);
+                break;
+            case "java.lang.Float":
+            case "float":
+                valueLayout = ValueLayout.JAVA_FLOAT.withName(name);
+                break;
+            case "java.lang.Char":
+            case "char":
+                valueLayout = ValueLayout.JAVA_CHAR.withName(name);
+                break;
+            case "java.lang.Byte":
+            case "byte":
+                valueLayout = ValueLayout.JAVA_BYTE.withName(name);
+                break;
+            case "java.lang.Short":
+            case "short":
+                valueLayout = ValueLayout.JAVA_SHORT.withName(name);
+                break;
+            case "java.lang.Boolean":
+            case "boolean":
+                valueLayout = ValueLayout.JAVA_BOOLEAN.withName(name);
+                break;
+            default:
+                throw new IllegalArgumentException("Unsupported field type: " + attributeClass);
         }
         return valueLayout;
     }
@@ -93,13 +118,11 @@ public class MemoryStruct<T> {
         if (collection.isEmpty()) {
             return null;
         }
-        if (collection instanceof List<?> || collection instanceof Set<?>) {
+        if (collection instanceof List<?>) {
             return getMemorySegmentForListOrSet(collection, arena);
-        } else if (collection instanceof Map<?, ?>) {
-            return getMemorySegmentForMap((Map<?, ?>) collection, arena);
+        } else {
+            throw new UnsupportedOperationException("Collection type not supported: " + collection.getClass());
         }
-
-        return null;
     }
 
     private MemorySegment getMemorySegmentForListOrSet(Collection<?> collection, Arena arena) {
@@ -108,31 +131,30 @@ public class MemoryStruct<T> {
         Object currentElement = it.next();
         SequenceLayout layout = MemoryLayout.sequenceLayout(size,
                 MemoryLayout.structLayout(getValueLayoutForClass(currentElement.getClass(), "collElement")));
-        VarHandle vh = layout.varHandle(PathElement.sequenceElement(), PathElement.groupElement("collElement"));
 
-        //set size of collection
-        MemoryLayout collectionLayout = MemoryLayout.structLayout(ValueLayout.JAVA_LONG.withName("size"), layout);
-        MemorySegment segment = arena.allocate(collectionLayout);
+        // set size of collection
+        MemoryLayout collectionLayout = MemoryLayout.structLayout(ValueLayout.JAVA_LONG.withName("size"),
+                layout.withName("seq"));
         VarHandle sizeHandle = collectionLayout.varHandle(PathElement.groupElement("size"));
-        sizeHandle.set(segment, 0, size);
         
+        //get varHandle for elements
+        VarHandle vh = layout.varHandle(PathElement.sequenceElement(), PathElement.groupElement("collElement"));
+        MemorySegment segment = arena.allocate(collectionLayout);
+        sizeHandle.set(segment, 0, size);
+
         boolean isString = currentElement instanceof String;
         long offset = 0;
-        while(currentElement != null){
-            if(isString) {
+        while (currentElement != null) {
+            if (isString) {
                 MemorySegment ms = arena.allocateFrom((String) currentElement);
-                vh.set(segment, 8l ,offset, ms);
+                vh.set(segment, 8l, offset, ms);
             } else {
-                vh.set(segment, 8l, offset, currentElement);  //TODO: get this to work with other types besides String!
+                vh.set(segment, 8l, offset, currentElement);
             }
             offset++;
             currentElement = it.hasNext() ? it.next() : null;
         }
         return segment;
-    }
-
-    private MemorySegment getMemorySegmentForMap(Map<?, ?> map, Arena arena) {
-        throw new UnsupportedOperationException("Map is not supported yet");
     }
 
     private String readNullTerminatedString(MemorySegment segment) {
@@ -146,22 +168,97 @@ public class MemoryStruct<T> {
         field.setAccessible(true);
         if (field.getType() == String.class) {
             return readNullTerminatedString((MemorySegment) value);
-        } else if(Collection.class.isAssignableFrom(field.getType())) {
-            return getFieldValueForCollection((MemorySegment) value);
+        } else if (List.class.isAssignableFrom(field.getType())) {
+            String typename = field.getGenericType().getTypeName();
+            String genericName = typename.substring(typename.indexOf('<') + 1, typename.lastIndexOf('>'));
+            return getFieldValueForList((MemorySegment) value, genericName);
+        } else if(Collection.class.isAssignableFrom(field.getType())){
+            throw new IllegalArgumentException("Unsupported field type: " + field.getType());
         }
         return vh.get(this.segment, 0);
     }
 
-    //lets get funky wunky 
-   private Object getFieldValueForCollection(MemorySegment value) {
+
+    private Object getFieldValueForList(MemorySegment value, String type) {
         long size = value.reinterpret(8l).get(ValueLayout.JAVA_LONG, 0);
-        List<String> list = new LinkedList<>();
-        for (int i = 0; i < size; i++) {
-            MemorySegment ms = value.reinterpret(8l+ 8*size).get(ValueLayout.ADDRESS, 8l * (i + 1)); //TODO: get this to work with other types besides String!
-            String s = readNullTerminatedString(ms);
-            list.add(s);
+        switch (type) {
+            case "java.lang.Integer": {
+                List<Integer> list = new LinkedList<>();
+                for (int i = 0; i < size; i++) {
+                    int iValue = value.reinterpret(8l + 4 * size).get(ValueLayout.JAVA_INT, 4l * i + 8l);
+                    list.add(iValue);
+                }
+                return list;
+            }
+            case "java.lang.String": {
+                List<String> list = new LinkedList<>();
+                for (int i = 0; i < size; i++) {
+                    MemorySegment ms = value.reinterpret(8l + 8 * size).get(ValueLayout.ADDRESS, 8l * i + 8l);
+                    String s = readNullTerminatedString(ms);
+                    list.add(s);
+                }
+                return list;
+            }
+            case "java.lang.Double": {
+                List<Double> list = new LinkedList<>();
+                for (int i = 0; i < size; i++) {
+                    double dValue = value.reinterpret(8l + 8 * size).get(ValueLayout.JAVA_DOUBLE, 8l * i + 8l);
+                    list.add(dValue);
+                }
+                return list;
+            }
+            case "java.lang.Long": {
+                List<Long> list = new LinkedList<>();
+                for (int i = 0; i < size; i++) {
+                    long lValue = value.reinterpret(8l + 8 * size).get(ValueLayout.JAVA_LONG, 8l * i + 8l);
+                    list.add(lValue);
+                }
+                return list;
+            }
+            case "java.lang.Float": {
+                List<Float> list = new LinkedList<>();
+                for (int i = 0; i < size; i++) {
+                    float fValue = value.reinterpret(8l + 4 * size).get(ValueLayout.JAVA_FLOAT, 4l * i + 8l);
+                    list.add(fValue);
+                }
+                return list;
+            }
+            case "java.lang.Char": {
+                List<Character> list = new LinkedList<>();
+                for (int i = 0; i < size; i++) {
+                    char cValue = value.reinterpret(8l + 2 * size).get(ValueLayout.JAVA_CHAR, 2l * i + 8l);
+                    list.add(cValue);
+                }
+                return list;
+            }
+            case "java.lang.Byte": {
+                List<Byte> list = new LinkedList<>();
+                for (int i = 0; i < size; i++) {
+                    byte bValue = value.reinterpret(8l + 1 * size).get(ValueLayout.JAVA_BYTE, 1l * i + 8l);
+                    list.add(bValue);
+                }
+                return list;
+            }
+            case "java.lang.Short": {
+                List<Short> list = new LinkedList<>();
+                for (int i = 0; i < size; i++) {
+                    short sValue = value.reinterpret(8l + 2 * size).get(ValueLayout.JAVA_SHORT, 2l * i + 8l);
+                    list.add(sValue);
+                }
+                return list;
+            }
+            case "java.lang.Boolean": {
+                List<Boolean> list = new LinkedList<>();
+                for (int i = 0; i < size; i++) {
+                    boolean bValue = value.reinterpret(8l + 1 * size).get(ValueLayout.JAVA_BOOLEAN, 1l * i + 8l);
+                    list.add(bValue);
+                }
+                return list;
+            }
+            default:
+                throw new IllegalArgumentException("Unsupported field type: " + type);
         }
-        return list;
+
     }
 
     public T convertBackToEntity() {
@@ -179,5 +276,5 @@ public class MemoryStruct<T> {
 
     public MemorySegment getSegment() {
         return this.segment;
-    }   
+    }
 }
