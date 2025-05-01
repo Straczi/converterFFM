@@ -14,6 +14,16 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+/**
+ * MemoryStruct is a utility class that allows you to convert Java objects into
+ * memory segments and vice versa. It uses the Java FFM API to do that.
+ * 
+ * The class to be converted must have a default constructor
+ * Currently the only suported types are: String, int, double, long, float, char, byte, short,
+ * and Lists of these types.
+ *
+ * @param <T> The type of the Java object to be converted.
+ */
 public class MemoryStruct<T> {
     private StructLayout structLayout;
     private MemorySegment segment;

@@ -5,30 +5,20 @@ import java.util.List;
 public class Customer {
     private String name;
     private String email;
-    private String address;
-    private List<String> orders;
+    private List<String> coWorkers;
+    private double height;
     private int age;
-    private String phoneNumber;
-    private List<Float> numbers;
 
-    public Customer(String name, String email, String address, String phoneNumber, int age, List<String> orders, List<Float> numbers) {
+    public Customer(String name, String email, List<String> coWorkers, int age, double height) {
         this.name = name;
         this.email = email;
-        this.address = address;
-        this.phoneNumber = phoneNumber;
+        this.coWorkers = coWorkers;
         this.age = age;
-        this.orders = orders;
-        this.numbers = numbers;
+        this.height = height;
     }
     public Customer() {
     }
-    public List<Float> getNumbers() {
-        return numbers;
-    }
-    public void setNumbers(List<Float> numbers) {
-        this.numbers = numbers;
-    }
-    
+
     public String getName() {
         return name;
     }
@@ -41,17 +31,11 @@ public class Customer {
     public void setEmail(String email) {
         this.email = email;
     }
-    public String getAddress() {
-        return address;
+    public List<String> getCoWorkers() {
+        return coWorkers;
     }
-    public void setAddress(String address) {
-        this.address = address;
-    }
-    public String getPhoneNumber() {
-        return phoneNumber;
-    }
-    public void setPhoneNumber(String phoneNumber) {
-        this.phoneNumber = phoneNumber;
+    public void setCoWorkers(List<String> coWorkers) {
+        this.coWorkers = coWorkers;
     }
     public int getAge() {
         return age;
@@ -59,12 +43,12 @@ public class Customer {
     public void setAge(int age) {
         this.age = age;
     }
-    
-    public List<String> getOrders() {
-        return orders;
+    public double getHeight() {
+        return height;
     }
-    public void setOrders(List<String> orders) {
-        this.orders = orders;
+    public void setHeight(double height) {
+        this.height = height;
     }
+
     
 }

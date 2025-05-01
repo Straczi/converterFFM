@@ -1,53 +1,47 @@
 package de.strocz;
 
 import java.lang.foreign.Arena;
+import java.lang.foreign.FunctionDescriptor;
+import java.lang.foreign.Linker;
+import java.lang.foreign.SymbolLookup;
+import java.lang.foreign.ValueLayout;
+import java.lang.invoke.MethodHandle;
 import java.util.List;
 
 import de.strocz.entities.Customer;
-import de.strocz.entities.Point;
 import de.strocz.memoryconverter.MemoryStruct;
 
-
 public class Main {
-    public static void main(String[] args) throws IllegalArgumentException, IllegalAccessException, NoSuchFieldException {
+    public static void main(String[] args) throws Throwable {
 
-        //example customer
-        Customer customer = new Customer("John Doe", "a@b.de", "Main Street 1", "1234567890", 30, List.of("aaksjdlaksjdlkajsdlkajsl", "b", "calhsdlkjahsdkj", "huh?"), List.of(42.0f, 6.9f, 2.1f, 3.14f));
-        
-        //example point
-        Point point = new Point(10, 20);
+        // example customer
+        List<String> coWorkers = List.of("Zigbert", "Strocz", "Anna", "Berta", "Charlie");
+        Customer customer = new Customer("John Doe", "john@stroz.com", coWorkers, 30, 1.75);
 
-        try(Arena arena = Arena.ofConfined()) {
-            MemoryStruct<Customer> memoryConvert = new MemoryStruct<>(arena, customer);
+        try (Arena arena = Arena.ofConfined()) {
+            MemoryStruct<Customer> customerStruct = new MemoryStruct<>(arena, customer);
 
-            System.out.println("Name: " + memoryConvert.getFieldValue("name"));
-            System.out.println("Email: " + memoryConvert.getFieldValue("email"));
-            System.out.println("Address: " + memoryConvert.getFieldValue("address"));
-            System.out.println("Phone: " + memoryConvert.getFieldValue("phoneNumber"));
-            System.out.println("Age: " + memoryConvert.getFieldValue("age")); 
-            System.out.println("orders: " + memoryConvert.getFieldValue("orders"));
-            System.out.println("numbers: " + memoryConvert.getFieldValue("numbers"));  
-            
-            Customer backToCustomer = memoryConvert.convertBackToEntity();
+            Linker linker = Linker.nativeLinker();
 
+            SymbolLookup loaderLookup = SymbolLookup
+                    .libraryLookup("src/main/resources/customer-sort.so", arena);
+
+            // Sort coworkers of customer in c function
+            MethodHandle printCustomerHandle = linker.downcallHandle(
+                    loaderLookup.find("sortCoWorkers").orElseThrow(),
+                    FunctionDescriptor.ofVoid(ValueLayout.ADDRESS));
+
+            printCustomerHandle.invoke(customerStruct.getSegment());
+
+            Customer backToCustomer = customerStruct.convertBackToEntity();
+
+            System.out.println("---back to java---");
             System.out.println("Name: " + backToCustomer.getName());
             System.out.println("Email: " + backToCustomer.getEmail());
-            System.out.println("Address: " + backToCustomer.getAddress());
-            System.out.println("Phone: " + backToCustomer.getPhoneNumber());
+            System.out.println("Co-Workers: " + backToCustomer.getCoWorkers());
             System.out.println("Age: " + backToCustomer.getAge());
-            System.out.println("Orders: " + backToCustomer.getOrders());
-            System.out.println("Numbers: " + backToCustomer.getNumbers());
-            
-            
-            //Point
+            System.out.println("Height: " + backToCustomer.getHeight());
 
-            MemoryStruct<Point> memoryConvertPoint = new MemoryStruct<>(arena, point);
-            System.out.println("X: " + memoryConvertPoint.getFieldValue("x"));
-            System.out.println("Y: " + memoryConvertPoint.getFieldValue("y"));
-
-            Point backToPoint = memoryConvertPoint.convertBackToEntity();
-            System.out.println("X: " + backToPoint.getX());
-            System.out.println("Y: " + backToPoint.getY());
         }
     }
 }
