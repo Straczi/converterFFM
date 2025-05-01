@@ -1,4 +1,4 @@
-package de.strocz;
+package de.strocz.memoryconverter;
 
 import java.lang.foreign.Arena;
 import java.lang.foreign.MemoryLayout;

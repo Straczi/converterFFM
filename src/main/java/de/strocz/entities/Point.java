@@ -1,4 +1,4 @@
-package de.strocz;
+package de.strocz.entities;
 
 public class Point {
     private int x;

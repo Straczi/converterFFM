@@ -1,4 +1,4 @@
-package de.strocz;
+package de.strocz.entities;
 
 import java.util.List;
 

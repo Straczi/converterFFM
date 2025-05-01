@@ -3,6 +3,10 @@ package de.strocz;
 import java.lang.foreign.Arena;
 import java.util.List;
 
+import de.strocz.entities.Customer;
+import de.strocz.entities.Point;
+import de.strocz.memoryconverter.MemoryStruct;
+
 
 public class Main {
     public static void main(String[] args) throws IllegalArgumentException, IllegalAccessException, NoSuchFieldException {
