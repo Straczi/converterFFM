@@ -18,7 +18,7 @@ public class Main {
         List<String> coWorkers = List.of("Zigbert", "Strocz", "Anna", "Berta", "Charlie");
         Customer customer = new Customer("John Doe", "john@stroz.com", coWorkers, 30, 1.75);
 
-        try (Arena arena = Arena.ofConfined()) {
+        try (Arena arena = Arena.ofShared()) {
             MemoryStruct<Customer> customerStruct = new MemoryStruct<>(arena, customer);
 
             Linker linker = Linker.nativeLinker();
@@ -41,7 +41,6 @@ public class Main {
             System.out.println("Co-Workers: " + backToCustomer.getCoWorkers());
             System.out.println("Age: " + backToCustomer.getAge());
             System.out.println("Height: " + backToCustomer.getHeight());
-
         }
     }
 }
