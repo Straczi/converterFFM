@@ -18,7 +18,7 @@ public class Main {
         List<String> coWorkers = List.of("Zigbert", "Strocz", "Anna", "Berta", "Charlie");
         Customer customer = new Customer("John Doe", "john@stroz.com", coWorkers, 30, 1.75);
 
-        try (Arena arena = Arena.ofShared()) {
+        try (Arena arena = Arena.ofConfined()) {
             MemoryStruct<Customer> customerStruct = new MemoryStruct<>(arena, customer);
 
             Linker linker = Linker.nativeLinker();
