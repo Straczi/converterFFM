@@ -27,11 +27,11 @@ public class Main {
                     .libraryLookup("src/main/resources/customer-sort.so", arena);
 
             // Sort coworkers of customer in c function
-            MethodHandle printCustomerHandle = linker.downcallHandle(
+            MethodHandle sortCoworkerHandle = linker.downcallHandle(
                     loaderLookup.find("sortCoWorkers").orElseThrow(),
                     FunctionDescriptor.ofVoid(ValueLayout.ADDRESS));
 
-            printCustomerHandle.invoke(customerStruct.getSegment());
+            sortCoworkerHandle.invoke(customerStruct.getSegment());
 
             Customer backToCustomer = customerStruct.convertBackToEntity();
 
