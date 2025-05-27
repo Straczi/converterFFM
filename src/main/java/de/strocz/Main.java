@@ -26,18 +26,20 @@ public class Main {
             SymbolLookup loaderLookup = SymbolLookup
                     .libraryLookup("src/main/resources/customer-sort.so", arena);
 
-            // Sort coworkers of customer in c function
+            //Find the method handle for the native function
             MethodHandle sortCoworkerHandle = linker.downcallHandle(
                     loaderLookup.find("sortCoWorkers").orElseThrow(),
                     FunctionDescriptor.ofVoid(ValueLayout.ADDRESS));
 
 
-                    
+
             System.out.println("---Before sorting---");
             System.out.println("Co-Workers: " + customerStruct.getFieldValue("coWorkers") + "\n");
 
+            //use Pointer to pass the segment to the native function
             sortCoworkerHandle.invoke(customerStruct.getSegment());
 
+            //convert back to Java object
             Customer backToCustomer = customerStruct.convertBackToEntity();
 
             System.out.println("---back to java---");
