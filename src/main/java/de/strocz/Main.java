@@ -31,6 +31,11 @@ public class Main {
                     loaderLookup.find("sortCoWorkers").orElseThrow(),
                     FunctionDescriptor.ofVoid(ValueLayout.ADDRESS));
 
+
+                    
+            System.out.println("---Before sorting---");
+            System.out.println("Co-Workers: " + customerStruct.getFieldValue("coWorkers") + "\n");
+
             sortCoworkerHandle.invoke(customerStruct.getSegment());
 
             Customer backToCustomer = customerStruct.convertBackToEntity();
